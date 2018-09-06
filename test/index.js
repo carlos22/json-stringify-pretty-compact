@@ -421,4 +421,28 @@ suite('stringify', function () {
         .to.equal('{ "a": [ 1 ] }')
     })
   })
+
+  suite('options.infiniteKeys', function () {
+    var lines = function (string) { return string.split('\n') }
+
+    // Returns a value that represented as compact JSON is `length` characters
+    // long: `["aaa...a"]`
+    var jsonValueOfLength = function (length) {
+      return [Array(length - '[""]'.length + 1).join('a')]
+    }
+
+    test('if missing, defaults to empty', function () {
+      expect(lines(stringify({a: jsonValueOfLength(80), b: jsonValueOfLength(100) }, { maxLength: Infinity })))
+        .to.have.length(1)
+      expect(lines(stringify({a: jsonValueOfLength(80), b: jsonValueOfLength(100) }, { maxLength: 20 })))
+        .to.have.length(8)
+    })
+
+    test('with given key', function () {
+      expect(lines(stringify({a: jsonValueOfLength(100), b: jsonValueOfLength(100) }, {infiniteKeys: ['b', 'ab']})))
+        .to.have.length(6)
+      expect(lines(stringify(jsonValueOfLength(60))))
+        .to.have.length(1)
+    })
+  })
 })

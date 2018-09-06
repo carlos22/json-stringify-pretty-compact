@@ -3,6 +3,7 @@ function stringify (obj, options) {
   var indent = JSON.stringify([1], null, get(options, 'indent', 2)).slice(2, -3)
   var addMargin = get(options, 'margins', false)
   var maxLength = (indent === '' ? Infinity : get(options, 'maxLength', 80))
+  var infiniteKeys = get(options, 'infiniteKeys', [])
 
   return (function _stringify (obj, currentIndent, reserved) {
     if (obj && typeof obj.toJSON === 'function') {
@@ -42,8 +43,13 @@ function stringify (obj, options) {
       } else {
         Object.keys(obj).forEach(function (key, index, array) {
           var keyPart = JSON.stringify(key) + ': '
-          var value = _stringify(obj[key], nextIndent,
-                                 keyPart.length + comma(array, index))
+          var value = ''
+          if (infiniteKeys.indexOf(key) > -1) {
+            value = prettify(JSON.stringify(obj[key]), addMargin)
+          } else {
+            value = _stringify(obj[key], nextIndent, keyPart.length + comma(array, index))
+          }
+
           if (value !== undefined) {
             items.push(keyPart + value)
           }
